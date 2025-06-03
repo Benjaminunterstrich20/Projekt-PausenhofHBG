@@ -1,48 +1,28 @@
-import json
-import os
-from flask import Flask, render_template, request, redirect, url_for
-
+from flask import Flask, render_template, request, redirect
 app = Flask(__name__)
+chats = {}
 
-DATA_FILE = "messages.json"
+@app.route('/', methods=['GET', 'POST'])
+def home():
+    if request.method == 'POST':
+        code = request.form['code']
+        return redirect(f'/chat/{code}')
+    return render_template('index.html')
 
-# Lade Nachrichten aus Datei
-def load_messages():
-    if not os.path.exists(DATA_FILE):
-        return {}
-    with open(DATA_FILE, "r") as f:
-        return json.load(f)
-
-# Speichere Nachrichten in Datei
-def save_messages(messages):
-    with open(DATA_FILE, "w") as f:
-        json.dump(messages, f)
-
-messages = load_messages()
-
-@app.route("/", methods=["GET", "POST"])
-def index():
-    if request.method == "POST":
-        code = request.form.get("code", "").strip()
-        if code:
-            return redirect(url_for("chat", code=code))
-    return render_template("index.html")
-
-@app.route("/chat/<code>", methods=["GET", "POST"])
+@app.route('/chat/<code>', methods=['GET', 'POST'])
 def chat(code):
-    global messages
-    if code not in messages:
-        messages[code] = []
+    if code not in chats:
+        chats[code] = {"messages": [], "sent_users": set()}
 
-    # Keine Begrenzung mehr, jeder kann chatten
-    if request.method == "POST":
-        msg = request.form.get("message", "").strip()
-        if msg:
-            messages[code].append(msg)
-            save_messages(messages)
-        return redirect(url_for("chat", code=code))
+    if request.method == 'POST':
+        user = request.form['user']
+        message = request.form['message']
 
-    return render_template("chat.html", code=code, messages=messages[code])
+        if user not in chats[code]['sent_users']:
+            chats[code]['messages'].append((user, message))
+            chats[code]['sent_users'].add(user)
 
-if __name__ == "__main__":
-    app.run(debug=True)
+    return render_template('chat.html', code=code, messages=chats[code]['messages'])
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=8080)
