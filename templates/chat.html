@@ -1,23 +1,29 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
 <head>
-  <title>Chat – {{ code }}</title>
-  <link rel="stylesheet" href="/static/style.css">
+    <meta charset="UTF-8" />
+    <title>Chatraum {{ code }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
 </head>
 <body>
-  <div class="container">
-    <h2>🎤 Flüsterraum: {{ code }}</h2>
-    <form method="POST">
-      <input type="text" name="user" placeholder="Dein Codenamen" required>
-      <input type="text" name="message" placeholder="Deine (einzige) Nachricht" required>
-      <button type="submit">Abschicken</button>
-    </form>
+    <div class="container chat-container">
+        <h1>Chatraum: <span class="code">{{ code }}</span></h1>
 
-    <div class="messages">
-      {% for user, msg in messages %}
-        <div class="message"><strong>{{ user }}:</strong> {{ msg }}</div>
-      {% endfor %}
+        <form method="POST" class="chat-form">
+            <input type="text" name="name" placeholder="Dein Name" required autocomplete="off" />
+            <input type="text" name="message" placeholder="Deine Nachricht" required autocomplete="off" />
+            <button type="submit">Senden</button>
+        </form>
+
+        <div class="messages">
+            {% for msg in messages %}
+                <div class="message">
+                    <strong>{{ msg.name }}:</strong> {{ msg.text }}
+                </div>
+            {% endfor %}
+        </div>
+
+        <a href="{{ url_for('index') }}" class="back-link">⬅ Zurück zur Startseite</a>
     </div>
-  </div>
 </body>
 </html>
